@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import streamlit as st
 import os 
 import sys
+import pinecone
 
 load_dotenv()
 
@@ -16,7 +17,7 @@ load_dotenv()
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 PINECONE_API_KEY = os.environ.get("PINECONE_API_KEY")
 PINECONE_ENV = os.environ.get("PINECONE_ENV")
-PINECONE_INDEX_NAME = os.environ.get("PINECONE_INDEX_NAME")
+PINECONE_INDEX_NAME = 'destination-index' # os.environ.get("PINECONE_INDEX_NAME")
 
 
 # *********************************
@@ -26,7 +27,7 @@ def reinit_pinecone() -> PineconeAgent:
     pinecone_agent = PineconeAgent(OPENAI_API_KEY=OPENAI_API_KEY,
                                PINECONE_API_KEY=PINECONE_API_KEY,
                                PINECONE_ENV=PINECONE_ENV,
-                               PINECONE_INDEX_NAME='test-index') # PINECONE_INDEX_NAME
+                               PINECONE_INDEX_NAME=PINECONE_INDEX_NAME) # PINECONE_INDEX_NAME
 
     pinecone_agent.init_pinecone()
 
@@ -34,13 +35,14 @@ def reinit_pinecone() -> PineconeAgent:
 
 def get_answers_from_context(context:Dict[str,List]) -> List[str]:
 
-    if not context:
+    try:
+        a = context["matches"]
+    except:
         print("Context is none")
-        raise KeyError("Context shouldn't be none")
+        raise KeyError("Context shouldn't be none")        
     
     answers = []
 
-    print(f"This is context: {type(context)}")
 
     for answer in context['matches']:
         print(f"Answer: {answer}")
@@ -55,9 +57,25 @@ st.header("Test Pinecone Query")
 # *********************************
 # Initialize Pinecone
 # *********************************
+try:
+    all_cities = list(pinecone.Index(PINECONE_INDEX_NAME).describe_index_stats()['namespaces'].keys())
+except:
+    pinecone_agent.init_pinecone()
+    all_cities = list(pinecone.Index(PINECONE_INDEX_NAME).describe_index_stats()['namespaces'].keys())
 
-city = st.text_input("insert the city name, to which this data belongs to. ex: Valencia")
-source = st.text_input("insert the data source type pdf, url, csv, or keep it empty for all")
+
+city = st.selectbox(
+        'City',
+        all_cities) 
+
+source = st.selectbox(
+            'Data Source',
+            ('PDF','URL','CSV','')
+        )
+
+if not source:
+    source = ''
+
 question = st.text_input("Enter your question. ex: list some hotels in valencia!")
 
 
@@ -73,13 +91,15 @@ if st.button('Get Answer'):
 
     with st.spinner("Getting answer from pinecone"):
         try:
-            pinecone_agent.get_context(question=question,source=source,city=city)
+            context = pinecone_agent.get_context(question=question,source=source,city=city)
+            answers = get_answers_from_context(context=context)
+            st.write("Answer")
+            st.write(answers)
         except PineconeProtocolError:
             try:
                 pinecone_agent.init_pinecone()
                 context = pinecone_agent.get_context(question=question,source=source,city=city)
                 answers = get_answers_from_context(context=context)
-                print(answers)
                 st.write("Answer")
                 st.write(answers)
                 
@@ -88,7 +108,6 @@ if st.button('Get Answer'):
                 pinecone_agent.init_pinecone()
                 context = pinecone_agent.get_context(question=question,source=source,city=city)
                 answers = get_answers_from_context(context=context)
-                print(answers)
                 st.write("Answer")
                 st.write(answers)
         except Exception as e:

@@ -21,17 +21,24 @@ load_dotenv()
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 PINECONE_API_KEY = os.environ.get("PINECONE_API_KEY")
 PINECONE_ENV = os.environ.get("PINECONE_ENV")
-PINECONE_INDEX_NAME = os.environ.get("PINECONE_INDEX_NAME")
+PINECONE_INDEX_NAME = "destination-index" #os.environ.get("PINECONE_INDEX_NAME")
 
 # *********************************
 # Initialize Pinecone
 # *********************************
-pinecone_agent = PineconeAgent(OPENAI_API_KEY=OPENAI_API_KEY,
+
+def reinit_pinecone() -> PineconeAgent:
+    pinecone_agent = PineconeAgent(OPENAI_API_KEY=OPENAI_API_KEY,
                                PINECONE_API_KEY=PINECONE_API_KEY,
                                PINECONE_ENV=PINECONE_ENV,
-                               PINECONE_INDEX_NAME='test-index') # PINECONE_INDEX_NAME
+                               PINECONE_INDEX_NAME=PINECONE_INDEX_NAME) # PINECONE_INDEX_NAME
 
-pinecone_agent.init_pinecone()
+    pinecone_agent.init_pinecone()
+
+    return pinecone_agent
+
+
+pinecone_agent = reinit_pinecone()
 
 # *********************************
 # Loaders
@@ -133,7 +140,6 @@ if options == "PDF":
                     # 1,2- Loading and storing text from pdf
                     try:
                         data = load_file_data(uploaded_file=pdf_file,file_type="pdf")
-                        print(data[0])
                         st.success("Text Loaded successfully from from this pdf. Storing data in pinecone....")
                     except Exception as e:
                         print(e)
@@ -183,8 +189,13 @@ if options == "URLS":
                     pinecone_agent.store_data_to_pinecone(data=data,city=city,source='url')
                     st.success("Data has been stored to Pinecone.")
                 except Exception as e:
-                    print(e)
-                    st.error("Failed to store data to pinecone")
+                    try:
+                        pinecone_agent = reinit_pinecone()
+                        pinecone_agent.store_data_to_pinecone(data=data,city=city,source='url')
+                        st.success("Data has been stored to Pinecone.")
+                    except Exception as e:
+                        print(e)
+                        st.error("Failed to store data to pinecone")
 
             
             

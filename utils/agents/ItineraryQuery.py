@@ -6,7 +6,6 @@ from  typing import Dict, Union
 
 BASE_DIR = Path(__file__).resolve().parent
 prompt_choices_path = os.path.join(BASE_DIR,"prompt_choices.json")
-print(prompt_choices_path)
 
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 
@@ -78,7 +77,7 @@ def get_pinecone_response(city:str,pinecone_city_info:str,
 
 
 
-def get_openai_response(city:str,hotel:str,num_of_days:int,user_persona:str,context:str) -> str:
+def get_openai_response(city:str,hotel:str,num_of_days:int,user_persona:str,context:str) -> Union[Dict, str]:
     """return openai response as str"""
 
     openai_choices = load_prompt_choices() 
@@ -87,20 +86,31 @@ def get_openai_response(city:str,hotel:str,num_of_days:int,user_persona:str,cont
                 "hotel":hotel,
                 "num_of_days":num_of_days,
                 "desired_json_format":openai_choices["desired_json_format"],
-                "user_persona":user_persona
+                "user_persona":user_persona,
+                "context":context
             }
     
     response = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
     messages=[
             {"role": "system", "content": openai_choices["system_text"].format(itinerary_info=itinerary_info)},
-            {"role": "user", "content": openai_choices["user_text"].format(itinerary_info=itinerary_info) + context},
+            {"role": "user", "content": openai_choices["user_text"].format(itinerary_info=itinerary_info)},
         ]
     )
     resp = response["choices"][0]["message"]["content"].replace('\\','')
-
+    if 'Notes' in resp:
+        resp = resp.split('Notes')[0]
+    else:
+        last_brace_index = resp.rfind('}')
+        if last_brace_index != -1:
+            resp = resp[:last_brace_index + 1]
     try:
-        return json.loads(resp)
+        out =  json.loads(resp)
+        
     except Exception as e:
-        return resp
+        print("Not json")
+        print(resp)
+        print("********************")
+        out =  r'{}'.format(resp)
 
+    return out

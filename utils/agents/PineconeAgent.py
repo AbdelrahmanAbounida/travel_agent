@@ -75,7 +75,7 @@ class PineconeAgent:
 
         for j,content in enumerate(data):
 
-            if 'been able to serve the page you asked' in content.page_content:
+            if 'been able to serve the page you asked' in content.page_content or 'Page Not Found' in content.page_content:
                 continue
             
             # 1- update meta data for this chunk of text
