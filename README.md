@@ -12,12 +12,11 @@ $ cd travel_agent
 $ pip install -r requirements.txt
 ```
 
-### .env
+# 1- .env
 Create a .env file in travel_agent folder with .env.local fields 
 
-# 1- Running
+# 2- Running
 
-## client
 ```
 $ streamlit run 1_Home.py
 ```
