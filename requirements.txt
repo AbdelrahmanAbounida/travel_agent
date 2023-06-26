@@ -1,7 +1,6 @@
 beautifulsoup4==4.11.1
 cmake==3.26.3
 langchain==0.0.208
-numpy==1.23.1
 openai==0.27.2
 pandas==1.0.3
 pinecone_client==2.2.1
