@@ -116,12 +116,16 @@ if options == "CSV":
             with st.spinner("Storing to pinecone...."):
                 try:
                     # 3- Storing to pinecone
-                    pinecone_agent = reinit_pinecone()
                     pinecone_agent.store_data_to_pinecone(data=data,city=city,source='csv')
                     st.success(f"CSV Content has been stored to Pinecone. under {city} namespace")
                 except Exception as e:
-                    print(e)
-                    st.error("Failed to store data to pinecone")
+                    try:
+                        pinecone_agent = reinit_pinecone()
+                        pinecone_agent.store_data_to_pinecone(data=data,city=city,source='csv')
+                        st.success(f"CSV Content has been stored to Pinecone. under {city} namespace")
+                    except Exception as e:
+                        print(e)
+                        st.error("Failed to store data to pinecone")
 
 ####################
 ## PDF
@@ -149,12 +153,16 @@ if options == "PDF":
                 with st.spinner("Storing to pinecone...."):
                     try:
                         # 3- Storing to pinecone
-                        pinecone_agent = reinit_pinecone()
                         pinecone_agent.store_data_to_pinecone(data=data,city=city,source='pdf')
                         st.success("Data has been stored to Pinecone.")
                     except Exception as e:
-                        print(e)
-                        st.error("Failed to store data to pinecone")
+                        try:
+                            pinecone_agent = reinit_pinecone()
+                            pinecone_agent.store_data_to_pinecone(data=data,city=city,source='pdf')
+                            st.success("Data has been stored to Pinecone.")
+                        except:
+                            print(e)
+                            st.error("Failed to store data to pinecone")
             else:
                 st.error("Please make sure to upload the PDF first")
                 sys.exit() 
