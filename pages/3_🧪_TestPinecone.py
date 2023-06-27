@@ -30,7 +30,7 @@ def reinit_pinecone() -> PineconeAgent:
                                PINECONE_INDEX_NAME=PINECONE_INDEX_NAME) # PINECONE_INDEX_NAME
 
     pinecone_agent.init_pinecone()
-
+    print(f"pinecone_agent: {pinecone_agent}")
     return pinecone_agent
 
 def get_answers_from_context(context:Dict[str,List]) -> List[str]:
