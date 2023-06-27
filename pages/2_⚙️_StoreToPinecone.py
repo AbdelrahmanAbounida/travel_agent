@@ -116,6 +116,7 @@ if options == "CSV":
             with st.spinner("Storing to pinecone...."):
                 try:
                     # 3- Storing to pinecone
+                    pinecone_agent = reinit_pinecone()
                     pinecone_agent.store_data_to_pinecone(data=data,city=city,source='csv')
                     st.success(f"CSV Content has been stored to Pinecone. under {city} namespace")
                 except Exception as e:
@@ -148,6 +149,7 @@ if options == "PDF":
                 with st.spinner("Storing to pinecone...."):
                     try:
                         # 3- Storing to pinecone
+                        pinecone_agent = reinit_pinecone()
                         pinecone_agent.store_data_to_pinecone(data=data,city=city,source='pdf')
                         st.success("Data has been stored to Pinecone.")
                     except Exception as e:
