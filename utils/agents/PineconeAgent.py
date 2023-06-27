@@ -61,7 +61,9 @@ class PineconeAgent:
         return query_result
 
     def store_data_to_pinecone(self,data:List[Document],city:str,source:str):
-
+        
+        print(self.PINECONE_INDEX_NAME)
+        print("Start storing")
         index = pinecone.Index(self.PINECONE_INDEX_NAME)
         model_name = 'text-embedding-ada-002'
         embeddings = OpenAIEmbeddings(
@@ -73,6 +75,7 @@ class PineconeAgent:
         texts = []
         metadatas = []
 
+        print(data)
         for j,content in enumerate(data):
 
             if 'been able to serve the page you asked' in content.page_content or 'Page Not Found' in content.page_content:
